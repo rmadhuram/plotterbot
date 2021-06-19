@@ -1,0 +1,183 @@
+<html>
+ 
+<head>
+
+    <script>
+        window.requestAnimFrame = (function(callback){
+            return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function(callback){
+                window.setTimeout(callback, 1000 / 100);
+            };
+        })();
+    </script>
+        
+  <script src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
+  <script type="application/javascript">
+
+    var PHYSICAL = {
+       1: {
+          p1: 18, p2: 7, p3: 13, r1: 7, r2: 7, dist: 17
+       },
+       2: {
+          p1: 12, p2: 5, p3: 10, r1: 4, r2: 6, dist: 15
+       },
+       3: {
+          p1: 15.5, p2: 6.8, p3: 10.2, r1: 7.5, r2: 6.7, dist: 12.7
+       },
+       4: {
+          p1: 18, p2: 7, p3: 13, r1: 10, r2: 3, dist: 17
+       },
+       5: {
+          p1: 10, p2: 10, p3: 13, r1: 3, r2: 3, dist: 10
+       }
+    };
+
+    var VELOCITY = {
+       1: {
+           getV1: function(t) { return 1.7; },
+           getV2: function(t) { return 2.35; }
+       },
+
+       2: {
+           getV1: function(t) { return 1.7; },
+           getV2: function(t) { return 4.3; }
+       },
+
+       3: {
+           getV1: function(t) { return 2; },
+           getV2: function(t) { return 2; }
+       },
+
+       4: {
+           getV1: function(t) { return Math.floor(t/500)%2==0?3:0 },
+           getV2: function(t) { return Math.floor(t/500)%2==1?3:0; }
+       },
+
+       5: {
+           getV1: function(t) { return Math.sin(t/500)*2; },
+           getV2: function(t) { return Math.cos(t/500)*2; }
+       },
+
+       6: {
+           getV1: function(t) { return Math.sin(2*t/500)*2; },
+           getV2: function(t) { return 3.7; }
+       }
+    }
+
+    var selPhysical = PHYSICAL[1];
+    var selVelocity = VELOCITY[1];
+ 
+    /**
+     * @param len length of arm attached to the motor.
+     */
+    function Motor(x, y, theta, len, v) {
+        this.x = x;
+        this.y = y;
+        this.theta = theta;
+        this.v = v;
+        this.len = len;
+    }
+
+    Motor.prototype.step = function() {
+        this.theta += this.v;
+    } 
+
+    Motor.prototype.getArmPos = function(len) {
+        var x1 = len*Math.cos(this.theta*0.0174533);
+        var y1 = len*Math.sin(this.theta*0.0174533);
+        return [x1, y1];
+    }
+
+    function getHeight(k1) {
+        /*var p1 = 18;
+        var p2 = 7;
+        var p3 = 13;*/
+
+        var p1 = selPhysical.p1;
+        var p2 = selPhysical.p2;
+        var p3 = selPhysical.p3;
+
+        var h1 = Math.sqrt(p1*p1 - (k1*k1/4));
+        var h2 = h1*p2/p1;
+        var k2 = k1*p2/p1;
+        var h3 = Math.sqrt(p3*p3 - (k2*k2/4));
+
+        var h = h1 + h2 + h3;
+
+        //var canvas = document.getElementById("canvas");
+        //var ctx = canvas.getContext("2d");
+           
+        //var x1 = k1*10; var y1 = 300-h*10;
+        //ctx.fillRect(x1, y1, 2, 2);
+        return h;
+    }
+    
+    var t = 1;    
+    oldX=null;
+    oldY=null;
+
+    function program1(t) {
+    }
+
+    function drawMotors(Y, ctx) {
+        var dist = selPhysical.dist;
+        var r1 = selPhysical.r1;
+        var r2 = selPhysical.r2;
+        var v1 = selVelocity.getV1(t);
+        var v2 = selVelocity.getV2(t);
+        
+        var x1 = r1*Math.cos(v1*t*0.0174533);
+        var y1 = r1*Math.sin(v1*t*0.0174533);
+
+        var x2 = r2*Math.cos(v2*t*0.0174533)+dist;
+        var y2 = r2*Math.sin(v2*t*0.0174533);
+
+        var dist = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+        var costheta = (x2-x1)/dist;
+        var sintheta = (y1-y2)/dist;
+
+        var h = getHeight(dist);
+        var px = h*sintheta;
+        var py = -h*costheta;
+        var x = (x1 + px)*10+450; var y = 600+(y1+py)*10;
+        //Y.log("t is " + t + " x1: " + x1 + " y1: " + y1); 
+
+        if (oldX != null) {
+           ctx.beginPath();
+           ctx.moveTo(oldX, oldY);
+           ctx.lineTo(x, y);
+           ctx.stroke();
+        }        
+        oldX = x;
+        oldY = y;
+
+        ctx.fillStyle = "rgb(160,0,0)";  
+
+        ctx.fillRect(x1*10+450, y1*10+600, 2, 2);
+        ctx.fillRect(x2*10+450, y2*10+600, 2, 2);
+        ctx.strokeStyle = "rgb(160,160,160)";  
+
+
+         t++;
+         window.requestAnimFrame(function() { drawMotors(Y, ctx); });     
+    }
+
+    YUI().use('console', function (Y) {
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        ctx.strokeStyle = "rgb(160,160,160)";  
+        ctx.mozImageSmoothingEnabled=true;
+        drawMotors(Y, ctx);
+           
+         
+    });
+  </script>
+ </head>
+ <body>
+   <canvas id="canvas" width="900" height="900"></canvas>
+ </body>
+</html>

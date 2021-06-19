@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="anim.js"></script>
+	
+	<script>
+	   var h1 = anim.addHandler(function() {
+	       console.log("Handler h1");
+	   });
+	   
+      var h2 = anim.addHandler(function() {
+          console.log("Handler h2");
+      });
+      
+      setTimeout(function() { h2.pause();}, 2000);
+      setTimeout(function() { h1.pause();}, 3000);
+
+      setTimeout(function() { anim.pause();}, 5000);
+      
+	   anim.start();	   
+   </script>
+</head>
+<body>
+
+ <body>
+
+ </body>
+</html>

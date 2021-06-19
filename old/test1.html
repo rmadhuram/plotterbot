@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style type="text/css">
+	  #canvas1 {
+	     position: relative;
+	  }
+	  
+	  #canvas2 {
+	     position: absolute;
+        top: 50px;
+        left: 50px;	     
+	  }
+	</style>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>	
+	<script>
+		// requestAnim shim layer by Paul Irish
+	    window.requestAnimFrame = (function(){
+	      return  window.requestAnimationFrame       || 
+	              window.webkitRequestAnimationFrame || 
+	              window.mozRequestAnimationFrame    || 
+	              window.oRequestAnimationFrame      || 
+	              window.msRequestAnimationFrame     || 
+	              function(/* function */ callback, /* DOMElement */ element){
+	                window.setTimeout(callback, 1000 / 60);
+	              };
+	    })();
+        
+        var ballCtx;
+        var t = 0;
+        
+        function drawBall() {
+            var centerX = t;
+            var centerY = 50;
+            var radius = 30;
+            
+            ballCtx.clearRect(0, 0, 900, 900);
+            
+            ballCtx.beginPath();
+            ballCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+            ballCtx.fillStyle = "#8ED6FF";
+            ballCtx.fill();
+            ballCtx.lineWidth = 5;
+            ballCtx.strokeStyle = "black";
+            ballCtx.stroke();
+            
+            t = ++t % 900;
+            window.requestAnimFrame(function() { drawBall(); });           
+            //window.setTimeout(drawBall, 10);
+        }
+        
+        function drawStuff() {
+            var canvas = document.getElementById("canvas1");
+            var context = canvas.getContext("2d");
+            var topLeftCornerX = 188;
+            var topLeftCornerY = 50;
+            var width = 200;
+            var height = 100;
+            
+            context.beginPath();
+            context.rect(topLeftCornerX, topLeftCornerY, width, height);
+            context.fillStyle = "#8ED6FF";
+            context.fill();
+            context.lineWidth = 5;
+            context.strokeStyle = "black";
+            context.stroke();
+            
+            var ballCanvas = document.getElementById("canvas2");
+            ballCtx = ballCanvas.getContext("2d");         
+        }
+        
+        $(document).ready(function(){
+            drawStuff();
+            drawBall();
+        });
+    </script>
+</head>
+<body>
+
+ <body>
+   <canvas id="canvas1" width="900" height="900"></canvas>
+   <canvas id="canvas2" width="900" height="900"></canvas>
+   
+   <p>This is a test! Hello</p>
+ </body>
+</html>
